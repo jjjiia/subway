@@ -17,7 +17,7 @@
 	<link href="static/bootstrap-3.1.1-dist/css/bootstrap-glyphicons.css" rel="stylesheet">
 	<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
 	<link href='http://fonts.googleapis.com/css?family=EB+Garamond' rel='stylesheet' type='text/css'>
-	<link href="font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet">
+	<script src="http://d3js.org/topojson.v1.min.js"></script>
 	
 	<link rel="stylesheet" type="text/css" href="static/stylesheets/subway_style.css"> </style>
 	<link href='http://fonts.googleapis.com/css?family=Pompiere|Poiret+One|Quicksand|The+Girl+Next+Door|Nova+Mono|Reenie+Beanie|Muli|Amatic+SC|Comfortaa|Julius+Sans+One' rel='stylesheet' type='text/css'>
@@ -41,13 +41,16 @@
 	<div id = "title-text">
 		<div id = "title">Boston</div>
 		<div id = "subtitle">
-			This map visualizes income by subway system
+Experimenting with public transportation system as the orientation for city data ...
 			<a id="showMore" href="#"> ... more </a>
 		</div>
 	</div>
 </div>
 <div id="containers">
-	Mean Household Income by T-Stop
+	<div id = "subway"></div>
+	<div id = "charts">
+		<div id = "chart-title">Station</div>
+	</div>
 </div>
 
 
