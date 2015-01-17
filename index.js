@@ -1,21 +1,24 @@
 $(function() {
 	// Window has loaded
 	queue()
-		.defer(d3.json, "static/geojson/lines.geojson")
-		.defer(d3.json, "static/geojson/stations.geojson")
-		.defer(d3.csv,"testData.csv")
-		.await(dataDidLoad);
+	//	.defer(d3.json, "static/geojson/lines.geojson")
+		//.defer(d3.json, "static/geojson/stations.geojson")
+		.defer(d3.json, "blockgroups_filtered (1).geojson")
+		.defer(d3.json, "subwaysystems/boston-mbta.geojson")
+		.defer(d3.json, "station_data (3).json")
+	.await(dataDidLoad);
 })
 
-function dataDidLoad(error, line, stops, data) {
+function dataDidLoad(error,blocks,stops,data) {
 	//console.log(line)	
 	//console.log(stops)
-	drawSubwayLines(line,stops,data)
-	var lineColor = "red"
-	drawLineGraph(lineColor,data)
+	drawSubwayLines(blocks,stops,data)
+//	var lineColor = "red"
+//	drawLineGraph(lineColor,stops_steve)
 }
 
-function drawLineGraph(lineColor,data){
+function drawLineGraph(lineColor){
+	var lineColor = "RED"
 	d3.select("#charts svg").remove()
 	//console.log(data)
 	var margin = {top: 20, right: 20, bottom: 40, left: 50},
@@ -67,7 +70,7 @@ function drawLineGraph(lineColor,data){
 		})
 }
 
-function drawSubwayLines(lines,stops,data){
+function drawSubwayLines(blocks, stops,data){
 	//console.log(stops)
 	var width = 500;
 	var height = 500;
@@ -83,23 +86,26 @@ function drawSubwayLines(lines,stops,data){
 		
 	var path = d3.geo.path()
 		.projection(projection)
-		
+			
+	console.log(blocks.features)
+	console.log(stops.features[0])	
 	var tip = d3.tip().attr('class', 'd3-tip').html(function(d) { return d;});
-		
+	var clicked = null;
 	svg.selectAll("path")
-        .data(lines.features)
+        .data(blocks.features)
         .enter()
         .append("path")
-		.attr("class", function(d){
-			return d.properties.LINE
-		})
+		//.attr("class", function(d){
+		//	return d.properties.LINE
+		//})
 	//	.attr("class","path")
 		.attr("d",path)
-		.attr("opacity", 0.3)
+		.attr("opacity", .2)
 		.style("fill", "none")
-        .style("stroke-width", "4")
+        .style("stroke-width", 1)
         .style("stroke", function(d){
 			//console.log(d.properties.LINE);
+			return "#aaa"
 			return d.properties.LINE
 		})
 		.on("mouseover", function(d){
@@ -107,13 +113,15 @@ function drawSubwayLines(lines,stops,data){
 			d3.selectAll("."+d.properties.LINE).attr("opacity",1)
 		})
 		.on("mouseout",function(d){
-			d3.selectAll("."+d.properties.LINE).attr("opacity",.3)
+			d3.selectAll("."+d.properties.LINE).attr("opacity",.2)
+			d3.selectAll("."+clicked).attr("opacity",1)
 		})
 		.on("click",function(d){
+			clicked = d.properties.LINE
 			var lineColor = d.properties.LINE
 			d3.select("#chart-title").html(d.properties.LINE)
 			drawLineGraph(lineColor,data)
-			d3.selectAll("path").attr("opacity",0.3)
+			d3.selectAll("path").attr("opacity",0.2)
 			d3.selectAll("."+d.properties.LINE).attr("opacity",1)
 		})	
 	svg.selectAll("circle")
@@ -144,13 +152,15 @@ function drawSubwayLines(lines,stops,data){
 			d3.select(this).style("fill", function(d){
 				return d.properties.LINE
 			})
-			d3.selectAll("."+d.properties.LINE).attr("opacity",.3)
+			d3.selectAll("."+d.properties.LINE).attr("opacity",.2)
+			d3.selectAll("."+clicked).attr("opacity",1)
 		})
 		.on("click",function(d){
+			clicked = d.properties.LINE
 			d3.select("#chart-title").html(d.properties.LINE)
 			var lineColor = d.properties.LINE
 			drawLineGraph(lineColor,data)
-			d3.selectAll("path").attr("opacity",0.3)
+			d3.selectAll("path").attr("opacity",0.2)
 			d3.selectAll("."+d.properties.LINE).attr("opacity",1)
 		})
 }

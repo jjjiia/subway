@@ -3,7 +3,7 @@
   <head>
 	  <meta charset="UTF-8">
 	  
-	<title>Subway Boston</title>
+	<title>Subway Washington DC</title>
 	<script src="static/javascripts/d3.v3.min.js"></script>
 	<script src="static/javascripts/topojson.v1.min.js"></script>
 	<script src="static/javascripts/jquery.min.js"></script>
@@ -39,7 +39,7 @@
 		<a id="logo" href="http://youarehere.cc"><img src="static/images/logo.jpg" style="width: 50px"></a>
 	</div>
 	<div id = "title-text">
-		<div id = "title">Boston</div>
+		<div id = "title">Washington DC</div>
 		<div id = "subtitle">
 Visualizing income by public transporation
 			<a id="showMore" href="#"> ... more </a>
@@ -48,10 +48,9 @@ Visualizing income by public transporation
 </div>
 <div id="containers">
 	<div id = "subway"></div>
-	<div id = "charts">
-	</div>
-	<div id = "chart-title">Station</div>
-	
+	<div id = "charts"></div>
+	<div id = "chart-title">chart</div>
+	<div id = "station_rollover">Station</div>
 </div>
 
 
@@ -65,8 +64,15 @@ Visualizing income by public transporation
 	</div>
 </div>
 
-<script type="text/javascript" charset="utf-8">var csv = "data.csv"</script>
-<script src="index.js"></script>
+<script type="text/javascript" charset="utf-8">
+
+var stations = "data/DC_circles.geojson"
+var data = "data/DC_station_data.json"
+var blocks = "data/DC_blockgroups_filtered.geojson"
+var center = [-77.025725,38.895875]
+var scale =[90000]
+</script>
+<script src="index_2.js"></script>
 
 <div id="essayBox">
 	<div id='essayBox-close' class="glyphicon glyphicon-remove"></div>
