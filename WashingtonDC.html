@@ -35,7 +35,8 @@
 
 <body>
 <div id = "header">
-	<div id = "logo">
+	<div id = "logo"><link rel="stylesheet" href="static/stylesheets/subway_style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	
 		<a id="logo" href="http://youarehere.cc"><img src="static/images/logo.jpg" style="width: 50px"></a>
 	</div>
 	<div id = "title-text">
@@ -49,8 +50,9 @@ Visualizing income by public transporation
 <div id="containers">
 	<div id = "subway"></div>
 	<div id = "charts"></div>
-	<div id = "chart-title">chart</div>
+	<div id = "chart-title">Place holder for detailed data
 	<div id = "station_rollover">Station</div>
+	</div>
 </div>
 
 
@@ -69,8 +71,8 @@ Visualizing income by public transporation
 var stations = "data/DC_circles.geojson"
 var data = "data/DC_station_data.json"
 var blocks = "data/DC_blockgroups_filtered.geojson"
-var center = [-77.025725,38.895875]
-var scale =[90000]
+var center = [-77.075725,38.925875]
+var scale =[60000]
 var mapWidth = 600
 var mapHeight = 600
 var translate = [mapWidth/2,mapHeight/2]
@@ -80,7 +82,7 @@ var colorDictionary = {
 	"YELLOW":"#ECAB23",
 	"BLUE":"#506FCA",
 	"ORANGE":"#DF9834",
-	"SILVER":"#aaaaaa"
+	"SILVER":"#999999"
 }
 </script>
 <script src="index_2.js"></script>

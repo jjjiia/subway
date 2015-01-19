@@ -45,7 +45,6 @@ function drawAllBlocks(blocks,svg){
 	    .style("stroke-width", .5)
 	    .style("opacity",.5)
 }
-
 function drawBlocks(blocks,currentCoordinates,data){
 	var stationName = currentCoordinates[0]
 	var currentData = data.stations[stationName]["blockgroups"]
@@ -83,13 +82,21 @@ function drawBlocks(blocks,currentCoordinates,data){
 			}
 		})
 }
-function calculateAverageIncome(blockgroups){
+function calculateIncomeData(blockgroups){
 	//console.log(blockgroups.length)
 	var sum = 0
 	var populationTotal = 0
+	var max = parseInt(blockgroups[0][1]["SE_T057_001"])
+	var min = parseInt(blockgroups[0][1]["SE_T057_001"])
 	for(var i in blockgroups){
 		var blockgroup = blockgroups[i]
 		var income = parseFloat(blockgroup[1]["SE_T057_001"])
+		if(income > max){
+			max = income
+		}
+		if (income < min){
+			min = income
+		}
 		var population = parseFloat(blockgroup[1]["SE_T001_001"])
 		var populationProportion = parseFloat(blockgroup[1]["pop_proportion"])
 		if(isNaN(income)){
@@ -101,7 +108,7 @@ function calculateAverageIncome(blockgroups){
 		}
 	}
 	//console.log([parseInt(sum),populationTotal,sum/populationTotal])
-	return [blockgroups.length,populationTotal,sum/populationTotal]
+	return [blockgroups.length,populationTotal,sum/populationTotal,min,max]
 }
 function calculateLineWideAverage(){}
 function calculateSystemWideAverage(){}
@@ -118,13 +125,12 @@ function formatLineData(lineColor,data){
 	var currentData = data.lines[lineColor]["stations"]
 	//console.log(lineColor)
 	var orderedStations = data.lines[lineColor]["primary_routes"][0]
-	console.log([lineColor,orderedStations])
+	//console.log([lineColor,orderedStations])
 	var stationList = []
 	var cummulativeDistance = 0
 	//for each station, get groups and average data
 	for(var station in orderedStations){
 		var currentStation = orderedStations[station]
-		console.log(currentStation)
 		var originStation = orderedStations[0]
 		//console.log([originStation,currentStation])
 		var blockgroups = data.stations[currentStation]["blockgroups"]
@@ -132,57 +138,75 @@ function formatLineData(lineColor,data){
 		var origin = data.stations[originStation]["coordinates"]
 		//console.log(currentData[station])
 		//console.log([income,coordinates])
-		var income = calculateAverageIncome(blockgroups)[2]
+		var incomeData = calculateIncomeData(blockgroups)
+		var income = incomeData[2]
+		var minIncome = incomeData[3]
+		var maxIncome = incomeData[4]
 		var distance = calculateDistance(origin,coordinates)
 		cummulativeDistance = cummulativeDistance+distance
-		stationList.push([currentStation,income,cummulativeDistance])
+		stationList.push([currentStation,income,cummulativeDistance,minIncome,maxIncome])
 		
 	}
-	console.log(stationList)
 	return stationList
+}
+function calculateLineWideAverage(graphData){
+	console.log(graphData)
+	var numberOfStations = graphData.length
+	var sum = 0
+	for(var station in graphData){
+		var stationAverage = graphData[station][1]
+		sum = sum + stationAverage
+	}
+	var lineAverage = sum*1.0/numberOfStations
+	return lineAverage
 }
 function drawLineGraph(lineColor,data){
 	var graphData = formatLineData(lineColor,data)
+	var lineAverage = calculateLineWideAverage(graphData)
+	console.log(lineAverage)
+	var color = lineColor
 	//console.log(graphData[graphData.length-1])
 	d3.select("#charts svg").remove()
-	var margin = {top: 20, right: 20, bottom: 40, left: 50},
-	    width = 500 - margin.left - margin.right,
+	var margin = {top: 20, right: 120, bottom: 20, left: 50},
+	    width = 800 - margin.left - margin.right,
 	    height = 300 - margin.top - margin.bottom;
 	var chartSvg = d3.select("#charts")
 		.append("svg")
 		.attr("width",width)
-		.attr("height",height);
+		.attr("height",height)
+		
 	var maxDistance = graphData[graphData.length-1][2]
-	var incomes = []
+	var maxIncomes = []
 		for(var i in graphData){
-			if(isNaN(graphData[i][1])){
-				incomes.push(0)
-			}else{
-				incomes.push(graphData[i][1])
-			}
+			maxIncomes.push(graphData[i][4])
 		}
-	var maxIncome = Math.max.apply(null, incomes);
+	var maxIncome = Math.max.apply(null, maxIncomes);
 	//	console.log(incomes)
 	//	console.log(maxIncome)
-	var incomeScale = d3.scale.linear().domain([0,maxIncome]).range([height,0])
-	var coordinateScale = d3.scale.linear().domain([0,maxDistance]).range([0,width])
+	var incomeScale = d3.scale.linear().domain([0,maxIncome]).range([height- margin.top,margin.bottom])
+	var coordinateScale = d3.scale.linear().domain([0,maxDistance]).range([margin.left,width - margin.right])	
+
 	var xAxis = d3.svg.axis()
 	    .scale(coordinateScale)
-	    .orient("bottom");
+		.orient("bottom");
 		
 	var yAxis = d3.svg.axis()
-	    .scale( incomeScale)
-	    .orient("left");
+	    .scale(incomeScale)
+	    .orient("left")
+		.ticks(8);
+		
     chartSvg.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
+        .attr("transform", "translate(0," + String(parseInt(height)-margin.bottom) + ")")
         .call(xAxis);
 		
 	chartSvg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
+        .attr("transform", "translate("+margin.left+",0)")
+		
       	.append("text")
-        .attr("transform", "rotate(-90)")
+        .attr("transform", "rotate(-90)")		
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
@@ -201,16 +225,108 @@ function drawLineGraph(lineColor,data){
 			return incomeScale(income)
 		})
 	
-	chartSvg.append("path")
+	chartSvg.append("path")		
 		.datum(graphData)
-		.attr("class","line")
+		.attr("class",color)
 		.attr("d",line)
-		.style("stroke", function(d){
-			return d.line
-		})
+		.attr("fill","none")
+		.style("stroke", colorDictionary[color])
 		.style("stroke-width", 1)
-		.style("stroke", "red")
 		.style("opacity",1)
+		
+	chartSvg.append("rect")
+		.attr("class", "lineAverage")
+		.attr("x", 0)
+		.attr("y", incomeScale(lineAverage))
+		.attr("width",width)
+		.attr("height",1)
+		.attr("fill","red")
+	chartSvg.append("text")
+		.text(color+" Line Average")
+		.attr("x", width)
+		.attr("y",incomeScale(lineAverage)-2)
+		.attr("text-anchor", "end")
+		.attr("fill","red")
+		
+	chartSvg.selectAll("text stationLabel")
+		.data(graphData)
+		.append("text")
+		.attr("class", "stationLabel")
+		.attr("x", function(d){
+			return coordinateScale(d[2])
+		})
+		.attr("y", function(d){
+			return incomeScale(d[1])
+		})
+		.text("station name")
+	
+	chartSvg.append("text")
+		.text("$"+ parseFloat(lineAverage).toFixed(2))
+		.attr("x", width)
+		.attr("y",incomeScale(lineAverage)+12)
+		.attr("text-anchor", "end")
+		.attr("fill","red")
+			
+	chartSvg.selectAll("circle average")
+		.data(graphData)
+		.enter()
+		.append("circle")
+		.attr("class", "average")
+		.attr("cx", function(d){
+			return coordinateScale(d[2])
+		})
+		.attr("cy", function(d){
+			return incomeScale(d[1])
+		})
+		.attr("r", 2)
+		.attr("fill",colorDictionary[color])
+		.append("text")
+		.text("station name")
+		
+	chartSvg.selectAll("circle min")
+		.data(graphData)
+		.enter()
+		.append("circle")
+		.attr("class", "min")
+		.attr("cx", function(d){
+			return coordinateScale(d[2])
+		})
+		.attr("cy", function(d){
+			return incomeScale(d[3])
+		})
+		.attr("r", 2)
+		.attr("fill",colorDictionary[color])
+		
+	chartSvg.selectAll("circle max")
+		.data(graphData)
+		.enter()
+		.append("circle")
+		.attr("class", "max")
+		.attr("cx", function(d){
+			return coordinateScale(d[2])
+		})
+		.attr("cy", function(d){
+			return incomeScale(d[4])
+		})
+		.attr("r", 2)
+		.attr("fill",colorDictionary[color])
+		
+	chartSvg.selectAll("rect range")
+		.data(graphData)
+		.enter()
+		.append("rect")
+		.attr("class", "range")
+		.attr("x", function(d){
+			return coordinateScale(d[2])-.5
+		})
+		.attr("y", function(d){
+			return incomeScale(d[4])
+		})
+		.attr("width",1)
+		.attr("height",function(d){
+			return incomeScale(d[3])-incomeScale(d[4])
+		})
+		.attr("fill",colorDictionary[color])
 }
 function displayDataByStation(station,data){
 	var blockgroups = data.stations[station]["blockgroups"]
@@ -333,7 +449,7 @@ var line = d3.svg.line()
 	.attr("class",color)
 		.attr("d",line(routeLine))
 		.attr("fill","none")
-		.style("stroke-width", 5)
+		.style("stroke-width", 4)
 		.style("stroke",colorDictionary[color])
 	.on("mouseover", function(d){
  		d3.select("#chart-title").html(color)
