@@ -6,6 +6,7 @@ $(function() {
 	queue()
 	//	.defer(d3.json, "static/geojson/lines.geojson")
 		//.defer(d3.json, "static/geojson/stations.geojson")
+		.defer(d3.json, stations)
 		.defer(d3.json, data)
 		.defer(d3.json, blocks)
 		.defer(d3.json, water)
@@ -13,10 +14,9 @@ $(function() {
 	.await(dataDidLoad);
 })
 
-function dataDidLoad(error,data,blocks,water,river) {
+function dataDidLoad(error,stations,data,blocks,water,river) {
 	//console.log(line)	
 	//console.log(stops)
-	console.log(data)
 	
 	var svg = d3.select("#subway")
 		.append("svg")
@@ -27,8 +27,8 @@ function dataDidLoad(error,data,blocks,water,river) {
 	//drawLineGraph("RED",data)
 	d3.selectAll(".rolloverpath").attr("opacity",1)
 	formatSubwayStopsByLine(stations,data,blocks,svg)
-	drawLineGraph(initialLineToDraw,data)
 	//drawAllBlocks(blocks,svg)
+	drawLineGraph(initialLineToDraw,data)
 	
 //	var lineColor = "red"
 //	drawLineGraph(lineColor,stops_steve)
@@ -60,7 +60,7 @@ function formatDetailedData(station,data){
 		max = "Not Enough Data"
 		min = "Not Enough Data"
 	}
-	return "<strong>"+capitalCase(station).replace(wordToReplace, "")+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius"+"<br/>Average Median Household Income: "+income+"<br/>Min Median Household Income: "+min+"<br/>Max Median Household Income: "+max
+	return "<strong>"+capitalCase(station).replace("Metro Station", "")+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius"+"<br/>Average Median Household Income: "+income+"<br/>Min Median Household Income: "+min+"<br/>Max Median Household Income: "+max
 }
 
 function drawWater(water,svg,fill,stroke,waterClass){
@@ -197,7 +197,7 @@ function calculateIncomeData(blockgroups){
 			populationTotal = parseInt(populationTotal)
 		}
 	}
-	console.log(["income data function",blockgroups.length,populationTotal,sum/populationTotal,min,max])
+	// console.log(["income data function",blockgroups.length,populationTotal,sum/populationTotal,min,max])
 	
 	return [blockgroups.length,populationTotal,averageIncome,min,max]
 }
@@ -378,7 +378,7 @@ function drawLineGraph(lineColor,data){
 		chartSvg.append("text")
 			.attr("id","stationLabel")
 			.text(function(d){
-				return capitalCase(graphData[i][0]).replace(wordToReplace, "").replace(wordToReplace2, "")
+				return capitalCase(graphData[i][0])
 			})
 			.attr("x", function(d){
 				return coordinateScale(graphData[i][2])
@@ -559,7 +559,6 @@ function drawLineGraph(lineColor,data){
 		})
 		.attr("r", 3)
 		.attr("fill",colorDictionary[color])
-	console.log(graphData)	
 	chartSvg.selectAll("circle average")
 		.data(graphData)
 		.enter()
@@ -749,7 +748,7 @@ function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
 			//drawBlocks(blocks,currentCoordinates,data)
 			currentStation = currentCoordinates[0]
 			highlightCurrentStation(currentStation,data)
-			var tipText = capitalCase(currentStation).replace(wordToReplace, "")
+			var tipText = capitalCase(currentStation).replace("Metro Station", "")
 			mapTip.html(tipText)
 			mapTip.show()
 			//console.log(fill)

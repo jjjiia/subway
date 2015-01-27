@@ -3,7 +3,7 @@
   <head>
 	  <meta charset="UTF-8">
 	  
-	<title>Subway Washington DC</title>
+	<title>Subway Income Philadelphia</title>
 	<script src="static/javascripts/d3.v3.min.js"></script>
 	<script src="static/javascripts/topojson.v1.min.js"></script>
 	<script src="static/javascripts/jquery.min.js"></script>
@@ -41,9 +41,9 @@
 		<a id="logo" href="http://youarehere.cc"><img src="static/images/logo.jpg" style="width: 50px"></a>
 	</div>
 	<div id = "title-text">
-		<div id = "title">Washington DC</div>
+		<div id = "title">Philadelphia</div>
 		<div id = "subtitle">
-This map visualizes the median household income by station along Washington DC’s Metro system. <br/> 
+This map visualizes the median income by station along Philadelphia’s SEPTA system. <br/> 
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project. 
 		<a id="showMore" href="#"> ... more </a>
 		</div>
@@ -70,50 +70,85 @@ It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.
 
 <script type="text/javascript" charset="utf-8">
 
-var stations = "data/DC_circles.geojson"
-var data = "data2/DC_station_data.json"
-var blocks = "data2/DC_blockgroups_filtered.geojson"
-var water = "data2/DC_water_filtered3.geojson"
-var river = "data2/DC_river.geojson"
+var stations = "data2/philadelphia_station_data.json"
+var data = "data2/philadelphia_station_data.json"
+var blocks = "data2/philadelphia_blockgroups_filtered.geojson"
+var water = "data2/philadelphia_outline.geojson"
+var river = "data2/philadelphia_neighborhoods.geojson"
 
-var center = [-77.075725,38.925875]
-var scale =[50000]
-var mapWidth = 480
+var center = [-75.2,39.95]
+var scale =[62000]
+var mapWidth = 460
 var mapHeight = 580
 var translate = [mapWidth/2,mapHeight/2]
 var colorDictionary = {
-	"RED":"#E04123",
-	"GREEN":"#60D585",
-	"YELLOW":"#FDE338",
-	"BLUE":"#506FCA",
-	"ORANGE":"#DF9834",
-	"SILVER":"#777"
-}
-var lineNameToLine = {
-	"RED":"RED",
-	"GREEN":"GREEN",
-	"YELLOW":"YELLOW",
-	"BLUE":"BLUE",
-	"ORANGE":"ORANGE",
-	"SILVER":"SILVER"
+	"_12":"red",
+	"_13721":"#51C347",
+	"_13723":"#51C347",
+	"_13748":"#9E69CD",
+	"_13786":"green",
+	"_13788":"green",
+	"_13790":"green",
+	"_13792":"green",
+	"_13817":"green",
+	"_13819":"green",
+	"_13890":"#DB7F38",
+	"_13891":"#5475D3"
 }
 var offsetDictionary = {
-	"RED":[2,-2],
-	"BLUE":[-4,6],
-	"GREEN":[4,5],
-	"YELLOW":[0,5],
-	"ORANGE":[-2,3],
-	"SILVER":[0,0]
+	"_12":[0,0],
+		"_13721":[0,0],"_13723":[0,0],"_13748":[0,0],"_13786":[0,0],"_13788":[0,0],"_13790":[0,0],"_13792":[0,0],"_13817":[0,0],"_13819":[0,0],"_13890":[0,0],"_13891":[0,0],
+	"_AIR":[0,0],
+	"_CHE":[0,0],
+	"_CHW":[0,0],
+	"_CYN":[0,0],
+	"_FOX":[0,0],
+	"_LAN":[0,0],
+	"_MED":[0,0],
+	"_NOR":[0,0],
+	"_PAO":[0,0],
+	"_TRE":[0,0],
+	"_WAR":[0,0],
+	"_WIL":[0,0],
+	"_WTR":[0,0]
+}
+var lineNameToLine = {
+	"_12":"Port Authority Transit Corporation",
+	"_13721":"Media to 69th St TC",
+	"_13723": "Sharon Hill to 69th St TC",
+	"_13748":"Norristown TC to 69th St TC",
+	"_13786":"13th-Market to 63rd-Malvern",
+	"_13788": "13th-Market to Darby Trans Cntr",
+	"_13790":"13th-Market to Yeadon-Darby ",
+	"_13792":"63rd-Girard to Richmond-Westmorelnd",
+	"_13817":"13th-Market to 61st-Baltimore   ",
+	"_13819":"13th-Market to 80th-Eastwick    ",
+	"_13890": "ATT Station to Fern Rock TC",
+	"_13891":"Frankford TC to 69th St TC    ",
+	"_AIR":"Airport Line",
+	"_CHE":"Chestnut Hill East Line",
+	"_CHW":"Chestnut Hill West Line",
+	"_CYN":"Cynwyd Line",
+	"_FOX":"Fox Chase Line",
+	"_LAN":"Lansdale/Doylestown Line",
+	"_MED":"Media/Elwyn Line",
+	"_NOR":"Manayunk/Norristown Line",
+	"_PAO":"Paoli/Thorndale Line",
+	"_TRE":"Trenton Line",
+	"_WAR":"Warminster Line",
+	"_WIL":"Wilmington/Newark Line",
+	"_WTR":"West Trenton Line"
 }
 var wordToReplace = "Metro Station"
 var wordToReplace2 = ""
-var initialLineToDraw = "RED"
+var initialLineToDraw = "_13891"
+
 </script>
 
 <div id="essayBox">
 	<div id='essayBox-close' class="glyphicon glyphicon-remove"></div>
 	<div id='essayContent'>
-	<p>This map visualizes the median household income by station along Washington DC’s Metro system.
+	<p>This map visualizes the median income by station along Philadelphia’s SEPTA system.
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project.  </p>
 
 <p><i>The New Yorker</i> map showed that transit networks are powerful orientation features. 
@@ -121,10 +156,12 @@ Because they are so familiar, they form a nice backbone over which we can commun
 
 <p>To build on the work of <i>The New Yorker</i> map, we are in the process of developing an open-source library by which any census data for any city can be visualized over a transit network.  This is the first usage of this library.</p>
 
-<p>Using median household income data from the census at the blockgroup level, we mapped the changes in income across each metro line. In Washington DC, the stops along the green line show lower median income than other lines. The westernmost stations show higher income than those on the other end of the line. </p>
+<p>Using median household income data from the census at the blockgroup level, we mapped the changes in income across each metro line. In Philadelphia, the stops along the green line show lower median income than other lines. The westernmost stations show higher income than those on the other end of the line. </p>
 
 <p>Station, line and route information was constructed from a GTFS (General Transit Feed Specification) feed. A station neighborhood around each station was defined as a circle with radius of 0.5 mile was constructed.  All block groups that intersect a station neighborhood were identified and the proportion of the intersection area to the block group area was used to weight the population for each block group.  A weighted average of median incomes was calculated for each station neighborhood across the intersecting block groups.</p>
 <br/>   
+<br/>   
+
 <p>Data sources for DC:</p>
 <p>American Community Survey 2009 to 2013 (5-Year Estimates): www.socialexplorer.com</p>
 <p><a href="http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R10866001" target = "blank">Social Explorer 2015</a></p>
