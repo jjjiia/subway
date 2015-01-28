@@ -644,8 +644,8 @@ function formatSubwayStopsByLine(stops,data,blocks,svg){
 	
 }
 function drawSubwayLines(route,data,svg,color,offset){
-//	console.log(route)
-//	console.log(data)
+	//	console.log(route)
+	//	console.log(data)
 	var routeLine = []
 	for(var station in route){
 		var currentStation = route[station]
@@ -704,6 +704,7 @@ function drawSubwayLines(route,data,svg,color,offset){
 		})
 		.on("mouseover",function(d){
 			//d3.select(this).style("opacity",0.2)
+			drawLineGraph(fill,data)
 		})
 		.on("mouseout",function(d){
 			//d3.selectAll(".rolloverpath").style("opacity",0)
@@ -745,6 +746,7 @@ function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
 	    .style("fill",colorDictionary[fill])
 		.attr("opacity", 0)
 		.on("mouseover", function(){
+			drawLineGraph(fill,data)
 			d3.select(this).attr("opacity",.2)
 			//drawBlocks(blocks,currentCoordinates,data)
 			currentStation = currentCoordinates[0]
@@ -769,7 +771,7 @@ function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
 		.on("click",function(d){
 		//	d3.selectAll(".selected").classed("selected",false).attr("class","rolloverpath")
 			d3.selectAll(".rolloverpath").style("opacity",0)
-			drawLineGraph(fill,data)
+			//drawLineGraph(fill,data)
 		//	console.log(fill)
 		})
 }

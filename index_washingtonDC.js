@@ -17,52 +17,32 @@ $(function() {
 function dataDidLoad(error,stations,data,blocks,water,river) {
 	//console.log(line)	
 	//console.log(stops)
-	
 	var svg = d3.select("#subway")
 		.append("svg")
 		.attr("width",mapWidth)
-		.attr("height",mapHeight); 
-	drawWater(water,svg,"none","#333","water")
-//	drawWater(river,svg,"none","#000","river")
-	//drawLineGraph("RED",data)
+		.attr("height",mapHeight);
+	drawWater(water,svg,"#bbb","#000","water")
+	//drawWater(river,svg,"none","#000","river")
 	d3.selectAll(".rolloverpath").attr("opacity",1)
 	formatSubwayStopsByLine(stations,data,blocks,svg)
-	//drawAllBlocks(blocks,svg)
 	drawLineGraph(initialLineToDraw,data)
+		
+	//drawOcean(ocean,svg)
+	//drawAllBlocks(blocks,svg)
 	
 //	var lineColor = "red"
 //	drawLineGraph(lineColor,stops_steve)
-}
-function capitalCase(string){
-	string = string.toLowerCase()
-	string = string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-	string = string.replace(/'([a-z])/g, function (g) { return "'"+g[1].toUpperCase(); });
-	string = string.replace("/", "-")
-	string = string.replace(/-([a-z])/g, function (g) { return "-"+g[1].toUpperCase(); });
-	
-	return string
-}
-function undoHighlight(station){
-	//console.log("undo "+station)
-	d3.select("#chart-title").html("")
-	d3.selectAll(".rollovers"+stripSpecialCharactersAndSpace(station)).attr("opacity",0)
 }
 
 function formatDetailedData(station,data){
 	var blockgroups = data.stations[station].blockgroups
 	var stationData = calculateIncomeData(blockgroups)
-	var income = "$"+stationData[2]
+	var income = parseInt(stationData[2])
 	var quantity = stationData[0]
-	var min = "$"+stationData[3]
-	var max = "$"+stationData[4]
-	if(income == "$0"){
-		income = "Not Enough Data"
-		max = "Not Enough Data"
-		min = "Not Enough Data"
-	}
-	return "<strong>"+capitalCase(station).replace("Metro Station", "")+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius"+"<br/>Average Median Household Income: "+income+"<br/>Min Median Household Income: "+min+"<br/>Max Median Household Income: "+max
+	var min = stationData[3]
+	var max = stationData[4]
+	return "<strong>"+capitalCase(station).replace("Metro Station", "")+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius"+"<br/>Average Median Household Income: $"+income+"<br/>Min Median Household Income: $"+min+"<br/>Max Median Household Income: $"+max
 }
-
 function drawWater(water,svg,fill,stroke,waterClass){
 	var projection = d3.geo.mercator()
 		.scale(scale)
@@ -78,8 +58,14 @@ function drawWater(water,svg,fill,stroke,waterClass){
 		.attr("d",path)
 		.attr("stroke", stroke)
 		.style("fill", fill)
-	    .style("stroke-width", 1)
+	    .style("stroke-width", .5)
 	    .style("opacity",.2)
+	svg.append("text")
+		.text("Potomac River")
+		.attr("x",110)
+		.attr("y",220)
+		.attr("fill", "#ccc")
+		//.attr("transform", "rotate(30)")
 }
 function drawAllBlocks(blocks,svg){
 	var projection = d3.geo.mercator()
@@ -139,19 +125,6 @@ function drawBlocks(blocks,currentCoordinates,data){
 		})
 }
 
-function highlightCurrentStation(station,data){
-	//console.log(station)
-	d3.selectAll(".rollovers"+stripSpecialCharactersAndSpace(station)).attr("opacity",.4)	
-	d3.select("#chart-title").html(formatDetailedData(station,data))
-
-}
-function stripSpecialCharactersAndSpace(inputString){
-	var newString = inputString.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"")
-	newString = newString.replace(/\s/g, '')
-	newString = newString.replace(/['"]+/g, '')
-	//console.log("class: "+newString)
-	return newString
-}
 function calculateIncomeData(blockgroups){
 	var sum = 0
 	var populationTotal = 0
@@ -159,7 +132,6 @@ function calculateIncomeData(blockgroups){
 	var min = 100000000000000
 	for(var i in blockgroups){
 		var blockgroup = blockgroups[i]
-		//console.log(blockgroup)
 		var income = parseFloat(blockgroup[1]["SE_T057_001"])
 		if(income > max){
 			max = income
@@ -176,44 +148,27 @@ function calculateIncomeData(blockgroups){
 		
 		if(isNaN(income)){
 			income = 0
-			population = 0
 		}
-		if(min == 100000000000000){
-			min = 0
-		}
+		
 		income = income*(population*populationProportion)
 		sum +=income
 		populationTotal = populationTotal+population*populationProportion
-		var averageIncome = sum/populationTotal
-		if(sum == 0){
-			averageIncome =0
-			max = 0
-			min = 0
-			populationTotal = 0
-		}else{
-			max = parseInt(max)
-			min = parseInt(min)
-			averageIncome = parseInt(averageIncome)
-			populationTotal = parseInt(populationTotal)
-		}
+	
 	}
-	// console.log(["income data function",blockgroups.length,populationTotal,sum/populationTotal,min,max])
-	
-	return [blockgroups.length,populationTotal,averageIncome,min,max]
+	return [blockgroups.length,populationTotal,sum/populationTotal,min,max]
 }
-/*function calculateLineWideAverage(graphData){
+//TODO: redo line average using population
+function calculateLineWideAverage(graphData){
 	
-}*/
+}
 function calculateAverages(data){
 	//console.log(data.lines)
 	//console.log(data.stations["NAYLOR ROAD METRO STATION"])
 	var incomeAverages = []
-	//console.log(data.lines["WIL"])
 	var allLinesIncomeSum = 0
 	var allLinesPopSum = 0
 	for(var line in data.lines){
-		//console.log(data.lines[line])
-		var lineName = data.lines[line]["line_name"]
+		var lineName = data.lines[line]["line_name"].toUpperCase()
 		var lineIncomeSum = 0
 		var linePopSum = 0
 		var lineData = data.lines[line]
@@ -228,7 +183,6 @@ function calculateAverages(data){
 				var income = parseFloat(currentBlockGroup["SE_T057_001"])
 				if (isNaN(income)){
 					income = 0
-					population = 1
 				}
 				var proportion = parseFloat(currentBlockGroup["pop_proportion"])
 				
@@ -246,7 +200,6 @@ function calculateAverages(data){
 		
 	}
 	incomeAverages.push(["all",allLinesAverage,allLinesIncomeSum])
-	//console.log(incomeAverages)
 	return incomeAverages
 }
 function calculateDistance(origin,coordinates) {
@@ -283,33 +236,54 @@ function formatLineData(lineColor,data){
 		var originStation = orderedStations[0]
 		//console.log([originStation,currentStation])
 		var blockgroups = data.stations[currentStation]["blockgroups"]
-		//console.log(blockgroups)
 		var coordinates = data.stations[currentStation]["coordinates"]
 		if(station == 0){
 			var origin = data.stations[originStation]["coordinates"]
 		}else{
 			var origin = data.stations[orderedStations[station-1]]["coordinates"]
 		}
+		//console.log(currentData[station])
+		//console.log([income,coordinates])
 		var incomeData = calculateIncomeData(blockgroups)
 		var income = incomeData[2]
 		var minIncome = incomeData[3]
 		var maxIncome = incomeData[4]
 		var distance = calculateDistance(origin,coordinates)
 		//added to space out the chart and labels
-		
 		if(distance < 0.8){
 			distance = 0.8
 		}
 		cummulativeDistance = cummulativeDistance+distance
-		//console.log([distance,cummulativeDistance])
+	//	console.log([distance,cummulativeDistance])
 		stationList.push([currentStation,income,cummulativeDistance,minIncome,maxIncome])
 		
 	}
-	
 	return stationList
 }
+function highlightCurrentStation(station,data){
+	//console.log(station)
+	d3.selectAll(".rollovers"+stripSpecialCharactersAndSpace(station)).attr("opacity",.4)	
+	d3.select("#chart-title").html(formatDetailedData(station,data))
 
+}
+function stripSpecialCharactersAndSpace(inputString){
+	var newString = inputString.replace(/[\.,-\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+	newString = newString.replace(/\s/g, '')
+	newString = newString.replace(/['"]+/g, '')
+	//console.log("class: "+newString)
+	return newString
+}
+function capitalCase(string){
+	string = string.toLowerCase()
+    return string.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+function undoHighlight(station){
+	//console.log("undo "+station)
+	d3.select("#chart-title").html("")
+	d3.selectAll(".rollovers"+stripSpecialCharactersAndSpace(station)).attr("opacity",0)
+}
 function drawLineGraph(lineColor,data){
+	//console.log([lineColor,data])
 	var averages = calculateAverages(data)
 	var graphData = formatLineData(lineColor,data)
 	//console.log(averages)
@@ -338,17 +312,13 @@ function drawLineGraph(lineColor,data){
 	
 	for(var i in averages){
 		var averagesLineColor = averages[i][0]
-		if(lineNameToLine[averagesLineColor] == lineColor){
+		if(averagesLineColor == lineColor){
 			var averageIncomeLineColor = averages[i][1]
-			//console.log(colorDictionary[lineNameToLine[lineColor]])
 		}
 	}
-	
-	var lineName = data.lines[lineColor]["line_name"].replace("Line", "")
-	
-	d3.select("#line-title").html("<strong>"+capitalCase(lineName)+" Line </strong><br/> Average Median Household Income: $"+parseInt(averageIncomeLineColor))
+	d3.select("#line-title").html("<strong>"+capitalCase(lineColor)+" Line </strong><br/> Average Median Household Income: $"+parseInt(averageIncomeLineColor))
 	chartSvg.append("text")
-	.text("Weighted Line Average: $"+parseInt(averageIncomeLineColor))
+	.text("Line Average: $"+parseInt(averageIncomeLineColor))
 	.attr("x",width)
 	.attr("y",incomeScale(averageIncomeLineColor)-margin.bottom-3)
 	.attr("text-anchor", "end")
@@ -366,30 +336,29 @@ function drawLineGraph(lineColor,data){
 	})
 	.attr("width",width)
 	.attr("height",2)
-	.attr("fill",function(d){
-		//return colorDictionary[d[0]]
-		return colorDictionary[lineNameToLine[d[0]]]
+	.attr("stroke",function(d){
+		return colorDictionary[d[0]]
 	})
 	.attr("opacity",0.3)
 	//.on("mouseover",function(d){
 		//console.log(["line average",d])
 	//})
-	for(var i in graphData){
-		chartSvg.append("text")
-			.attr("id","stationLabel")
-			.text(function(d){
-				return capitalCase(graphData[i][0])
-			})
-			.attr("x", function(d){
-				return coordinateScale(graphData[i][2])
-			})
-			.attr("y", function(d,i){
-				return height-margin.bottom-margin.top
-			})
-			.attr("dy", 5)
-			.style("text-anchor","start")
-	}
-	//console.log(graphData)
+		for(var i in graphData){
+			chartSvg.append("text")
+				.attr("id","stationLabel")
+				.text(function(d){
+					return capitalCase(graphData[i][0])
+				})
+				.attr("x", function(d){
+					return coordinateScale(graphData[i][2])
+				})
+				.attr("y", function(d,i){
+					return height-margin.bottom-margin.top
+				})
+				.attr("dy", 5)
+				.style("text-anchor","start")
+		}
+	
 	//chartSvg.selectAll("text")
 	//	.data(graphData)
 	//	.enter()
@@ -409,14 +378,21 @@ function drawLineGraph(lineColor,data){
 	//			return capitalCase(d[0]).replace("Metro Station", "")
 	//	})
 	//	.style("text-anchor","start")
-	//	
-//	chartSvg.append("text")
-//	.text(graphData[0][0])
-//	.attr("x",function(d){coordinateScale((graphData[0][2]))})
-//	.attr("y",height-margin.bottom-margin.top)
-//	.attr("fill", "#aaa")	
-//	.attr("id","stationLabel")
+		
+	//		.attr("transform",function(d,i){
+	//			return "rotate(45)"
+	//		});
 
+	//	var xAxis = d3.svg.axis()
+	//	    .scale(coordinateScale)
+	//		.orient("bottom")
+	//		.ticks(0)
+	//		
+	//    chartSvg.append("g")
+	//        .attr("class", "x axis")
+	//        .attr("transform", "translate(0," + String(parseInt(height)-parseInt(margin.bottom)) + ")")
+	//        .call(xAxis)
+	//		.attr("fill","#aaa")
 	chartSvg.append("rect")
 		.attr("y",height-margin.bottom-20)
 		.attr("x",margin.left)
@@ -439,7 +415,7 @@ function drawLineGraph(lineColor,data){
 		.attr("y", -55)
 		.attr("transform","rotate(90)")
         .style("text-anchor", "start")
-        .text("Median Household Income ($)")
+        .text("$")
 		.attr("fill","#aaa");
 	//line graph 		
 	var line = d3.svg.line()
@@ -559,6 +535,7 @@ function drawLineGraph(lineColor,data){
 		})
 		.attr("r", 3)
 		.attr("fill",colorDictionary[color])
+		
 	chartSvg.selectAll("circle average")
 		.data(graphData)
 		.enter()
@@ -591,7 +568,72 @@ function drawLineGraph(lineColor,data){
 		})
 	
 }
-
+function displayDataByStation(station,data){
+	var blockgroups = data.stations[station]["blockgroups"]
+	var averageIncome = calculateAverageIncome(blockgroups)
+	return "average median household income: "+parseInt(averageIncome[2])+"<br/>population: "+averageIncome[1]+"<br/>blocks: "+averageIncome[0]
+}
+function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
+	var projection = d3.geo.mercator()
+		.scale(scale)
+		.center(center)
+		.translate(translate)
+	 
+	svg.append("circle")
+		.attr("cx", projection(currentCoordinates[1])[0]+offset[0])
+		.attr("cy", projection(currentCoordinates[1])[1]+offset[1])
+		.attr("r",3)
+		.attr("class",function(d){
+			return stripSpecialCharactersAndSpace(currentCoordinates[0])
+		})
+	    .style("fill",colorDictionary[fill])
+		.attr("opacity", 1)
+		//.attr("stroke","#fff")
+		
+		
+	var mapTip = d3.tip()
+		.attr('class', 'map-tip')
+		.offset([-4, 0])
+	
+	svg.call(mapTip)
+	svg.append("circle")
+		.attr("cx", projection(currentCoordinates[1])[0]+offset[0])
+		.attr("cy", projection(currentCoordinates[1])[1]+offset[1])
+		.attr("r",10)
+		.attr("class",function(d){
+			return "rollovers"+stripSpecialCharactersAndSpace(currentCoordinates[0])
+		})
+	    .style("fill",colorDictionary[fill])
+		.attr("opacity", 0)
+		.on("mouseover", function(){
+			d3.select(this).attr("opacity",.5)
+			//drawBlocks(blocks,currentCoordinates,data)
+			currentStation = currentCoordinates[0]
+			highlightCurrentStation(currentStation,data)
+			var tipText = capitalCase(currentStation).replace("Metro Station", "")
+			mapTip.html(tipText)
+			mapTip.show()
+			//console.log(fill)
+			//d3.selectAll("."+fill).attr("opacity",.2)
+			
+		//	var stationData = displayDataByStation(station,data)
+			//d3.select("#station_rollover").html("stop:"+d.properties.STATION+"</br> line:"+d.properties.LINE+"</br>"+stationData)			
+		})
+		.on("mouseout",function(d){
+			undoHighlight(currentStation)
+			mapTip.hide()
+			//d3.selectAll(".rolloverpath").attr("opacity",0)
+			//d3.selectAll(".selected").style("opacity",.2)
+			
+			//d3.selectAll("path .rolloverpath ."+fill).attr("opacity",0)
+		})
+		.on("click",function(d){
+		//	d3.selectAll(".selected").classed("selected",false).attr("class","rolloverpath")
+			d3.selectAll(".rolloverpath").style("opacity",0)
+			drawLineGraph(fill,data)
+		//	console.log(fill)
+		})
+}
 function buildStationLineDictionary(data){
 	//console.log(data.lines)
 	var stationLineDictionary = {}
@@ -605,15 +647,15 @@ function buildStationLineDictionary(data){
 			stationLineDictionary[stationName]=stationRoutes
 		}
 	}
+	//console.log(stationLineDictionary)
 	return stationLineDictionary
 }
 function formatSubwayStopsByLine(stops,data,blocks,svg){
-	var stationLineDictionary = buildStationLineDictionary(data)	
+	var stationLineDictionary = buildStationLineDictionary(data)
 	var projection = d3.geo.mercator()
 		.scale(scale)
 		.center(center)
 		.translate(translate)
-	
 	var stationData = data.lines
 	var stationLocationData = data.stations
 	var index = 0
@@ -621,9 +663,7 @@ function formatSubwayStopsByLine(stops,data,blocks,svg){
 	for(var route in stationData){
 		index +=1
 		var offset = offsetDictionary[route]
-		//console.log(stationData[route])
 		var currentRoute = stationData[route]["primary_routes"][0]
-		//console.log(currentRoute)
 		var color = route
 		drawSubwayLines(currentRoute,data,svg,color,offset)
 
@@ -696,9 +736,9 @@ function drawSubwayLines(route,data,svg,color,offset){
 		.on("click",function(d){
 			var lineColor = color
 			drawLineGraph(lineColor,data)
-			//d3.selectAll(".selected").classed("selected",false).attr("class","rolloverpath "+color)
-			//d3.selectAll(".rolloverpath").style("opacity",0)
-			//d3.select(this).attr("class","selected").style("opacity",0.2)
+		//	d3.selectAll(".selected").classed("selected",false).attr("class","rolloverpath "+color)
+		//	d3.selectAll(".rolloverpath").style("opacity",0)
+		//	d3.select(this).attr("class","selected").style("opacity",0.2)
 			//d3.select("#chart-title").html("Rollover stations to see detailed data.")
 		})
 		.on("mouseover",function(d){
@@ -709,66 +749,4 @@ function drawSubwayLines(route,data,svg,color,offset){
 			//d3.selectAll(".selected").style("opacity",.2)
 		})		
 
-
-}
-function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
-	var projection = d3.geo.mercator()
-		.scale(scale)
-		.center(center)
-		.translate(translate)
-	 
-	svg.append("circle")
-		.attr("cx", projection(currentCoordinates[1])[0]+offset[0])
-		.attr("cy", projection(currentCoordinates[1])[1]+offset[1])
-		.attr("r",3)
-		.attr("class",function(d){
-			return stripSpecialCharactersAndSpace(currentCoordinates[0])
-		})
-	    .style("fill",colorDictionary[fill])
-		.attr("opacity", .8)
-		//.attr("stroke","#fff")
-		
-		
-	var mapTip = d3.tip()
-		.attr('class', 'map-tip')
-		.offset([-4, 0])
-	
-	svg.call(mapTip)
-	svg.append("circle")
-		.attr("cx", projection(currentCoordinates[1])[0]+offset[0])
-		.attr("cy", projection(currentCoordinates[1])[1]+offset[1])
-		.attr("r",10)
-		.attr("class",function(d){
-			return "rollovers"+stripSpecialCharactersAndSpace(currentCoordinates[0])
-		})
-	    .style("fill",colorDictionary[fill])
-		.attr("opacity", 0)
-		.on("mouseover", function(){
-			d3.select(this).attr("opacity",.2)
-			//drawBlocks(blocks,currentCoordinates,data)
-			currentStation = currentCoordinates[0]
-			highlightCurrentStation(currentStation,data)
-			var tipText = capitalCase(currentStation).replace("Metro Station", "")
-			mapTip.html(tipText)
-			mapTip.show()
-			//console.log(fill)
-			//d3.selectAll("."+fill).attr("opacity",.2)
-			
-		//	var stationData = displayDataByStation(station,data)
-			//d3.select("#station_rollover").html("stop:"+d.properties.STATION+"</br> line:"+d.properties.LINE+"</br>"+stationData)			
-		})
-		.on("mouseout",function(d){
-			undoHighlight(currentStation)
-			mapTip.hide()
-			//d3.selectAll(".rolloverpath").attr("opacity",0)
-			//d3.selectAll(".selected").style("opacity",.2)
-			
-			//d3.selectAll("path .rolloverpath ."+fill).attr("opacity",0)
-		})
-		.on("click",function(d){
-		//	d3.selectAll(".selected").classed("selected",false).attr("class","rolloverpath")
-			d3.selectAll(".rolloverpath").style("opacity",0)
-			drawLineGraph(fill,data)
-		//	console.log(fill)
-		})
 }
