@@ -139,8 +139,7 @@ var lineNameToLine = {
 	"_WIL":"Wilmington/Newark Line",
 	"_WTR":"West Trenton Line"
 }
-var wordToReplace = "Metro Station"
-var wordToReplace2 = ""
+var wordsToReplace = [" - Mfl"," - Bsl","Station"," - Fs ", " - Nhsl", " - Mbfs"]
 var initialLineToDraw = "_13891"
 
 </script>
@@ -160,7 +159,7 @@ Because they are so familiar, they form a nice backbone over which we can commun
 
 <p>Station, line and route information was constructed from a GTFS (General Transit Feed Specification) feed. A station neighborhood around each station was defined as a circle with radius of 0.5 mile was constructed.  All block groups that intersect a station neighborhood were identified and the proportion of the intersection area to the block group area was used to weight the population for each block group.  A weighted average of median incomes was calculated for each station neighborhood across the intersecting block groups.</p>
 <br/>   
-<br/>   
+
 
 <p>Data sources for Philadelphia:</p>
 <p>American Community Survey 2009 to 2013 (5-Year Estimates): www.socialexplorer.com</p>
