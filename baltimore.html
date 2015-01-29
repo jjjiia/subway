@@ -3,7 +3,7 @@
   <head>
 	  <meta charset="UTF-8">
 	  
-	<title>Subway Boston</title>
+	<title>Subway Income Baltimore</title>
 	<script src="static/javascripts/d3.v3.min.js"></script>
 	<script src="static/javascripts/topojson.v1.min.js"></script>
 	<script src="static/javascripts/jquery.min.js"></script>
@@ -20,7 +20,7 @@
 	<script src="http://d3js.org/topojson.v1.min.js"></script>
 	<script src="http://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
 	
-	<link rel="stylesheet" type="text/css" href="static/stylesheets/subway_style_boston.css"> </style>
+	<link rel="stylesheet" type="text/css" href="static/stylesheets/subway_style.css"> </style>
 	<link href='http://fonts.googleapis.com/css?family=Pompiere|Poiret+One|Quicksand|The+Girl+Next+Door|Nova+Mono|Reenie+Beanie|Muli|Amatic+SC|Comfortaa|Julius+Sans+One' rel='stylesheet' type='text/css'>
       <!-- Google Analytics -->
       <script>
@@ -41,9 +41,9 @@
 		<a id="logo" href="http://youarehere.cc"><img src="static/images/logo.jpg" style="width: 50px"></a>
 	</div>
 	<div id = "title-text">
-		<div id = "title">Boston</div>
+		<div id = "title">Baltimore</div>
 		<div id = "subtitle">
-This map visualizes the median income by station along Philadelphia’s SEPTA system. <br/> 
+This map visualizes the median income by station along Baltimore's Metro Subway and Light Rail system. <br/> 
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project. 
 		<a id="showMore" href="#"> ... more </a>
 		</div>
@@ -70,91 +70,44 @@ It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.
 
 <script type="text/javascript" charset="utf-8">
 
-var commuter = false;
-var commuterScale = [];
-var communtercenter = [-71.17,42.315163]
-var commuterscale =[26000]
+var stations = "data2/philadelphia_station_data.json"
+var data = "data2/baltimore_station_data.json"
+var blocks = "data2/philadelphia_blockgroups_filtered.geojson"
+var boundary = "data2/baltimore_city.geojson"
+var water = "data2/baltimore_ocean.geojson"
 
-var stations = "data2/boston_circles.geojson"
-var data = "data2/boston_station_data.json"
-var blocks = "data2/boston_blockgroups_filtered.geojson"
-var water = "data2/boston_ocean.geojson"
-var river = "data2/boston_river.geojson"
-
-var center = [-71.122,42.315163]
-var scale =[98000]
-var mapWidth = 460
-var mapHeight = 600
+var center = [-76.66,39.34]
+var scale =[72000]
+var mapWidth = 400
+var mapHeight = 580
 var translate = [mapWidth/2,mapHeight/2]
 var colorDictionary = {
-"_741":"#555",
-"_742":"#555",
-"_746":"#555",
-"_749":"#555",
-"_751":"#555",
-"_810_":"#44CA4A",
-"_813_":"#44CA4A",
-"_823_":"#44CA4A",
-"_830_":"#44CA4A",
-"_831_":"#44CA4A",
-"_840_":"#44CA4A",
-"_842_":"#44CA4A",
-"_851_":"#44CA4A",
-"_852_":"#44CA4A",
-"_880_":"#44CA4A",
-"_882_":"#44CA4A",
-"_899_":"#ED4935",
-"_903_":"#FCA70A",
-"_913_":"#FCA70A",
-"_931_":"#E6422A",
-"_933_":"#E6422A",
-"_946_":"#1A84F0",
-"_948_":"#1A84F0",
-"_CR-Fairmount":"#000",
-"_CR-Fitchburg":"#000",
-"_CR-Franklin":"#000",
-"_CR-Greenbush":"#000",
-"_CR-Haverhill":"#000",
-"_CR-Kingston":"#000",
-"_CR-Lowell":"#000",
-"_CR-Middleborough":"#000",
-"_CR-Needham":"#000",
-"_CR-Newburyport":"#000",
-"_CR-Providence":"#000",
-"_CR-Worcester":"#000"
+	"_7139":"#5CD884",
+	"_7148": "#5372D2",
+	"_7148-bwi": "#5372D2",
+	"_7148-penn": "black"
 }
 var offsetDictionary = {
-"_741":[0,0],
-"_742":[0,0],
-"_746":[0,0],
-"_749":[0,0],
-"_751":[0,0],
-"_810_":[0,0],
-"_813_":[0,0],
-"_823_":[0,0],
-"_830_":[0,0],
-"_831_":[0,0],
-"_840_":[0,0],
-"_842_":[0,0],
-"_851_":[0,0],
-"_852_":[0,0],
-"_880_":[0,0],
-"_882_":[0,0],
-"_899_":[0,0],
-"_903_":[0,0],
-"_913_":[0,0],
-"_931_":[0,0],
-"_933_":[0,0],
-"_946_":[0,0],
-"_948_":[0,0],
-"_CR-Fairmount": [0,0],"_CR-Fitchburg":[0,0], "_CR-Franklin":[0,0], "_CR-Greenbush":[0,0], "_CR-Haverhill":[0,0], "_CR-Kingston":[0,0], "_CR-Lowell":[0,0], "_CR-Middleborough":[0,0], "_CR-Needham":[0,0], "_CR-Newburyport":[0,0], "_CR-Providence":[0,0], "_CR-Worcester":[0,0]
+	"_7139":[0,0],
+	"_7148":[0,0],
+	"_7148-bwi":[0,0],
+	"_7148-penn":[5,0]
 }
+var lineNameToLine = {
+	"_7139": "METRO",
+	"_7148":"LIGHT RAIL",
+	"_7148-bwi":"LIGHT RAIL- BWI",
+	"_7148-penn":"LIGHT RAIL- Penn Station - Camden Yards"
+}
+var wordsToReplace = ["& Lt Rail Stat Sb","S-B","Station"," Sb"," Nb","& Lt Rail Stat Nb", "Light Rail Stat", "&","Lt Rail","Metro Stat","(Metro)"]
+var initialLineToDraw = "_7148-bwi"
+
 </script>
 
 <div id="essayBox">
 	<div id='essayBox-close' class="glyphicon glyphicon-remove"></div>
 	<div id='essayContent'>
-	<p>This map visualizes the median income by station along Boston’s T system.
+	<p>This map visualizes the median income by station along Baltimore's Metro Subway and Light Rail system.
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project.  </p>
 
 <p><i>The New Yorker</i> map showed that transit networks are powerful orientation features. 
@@ -162,16 +115,16 @@ Because they are so familiar, they form a nice backbone over which we can commun
 
 <p>To build on the work of <i>The New Yorker</i> map, we are in the process of developing an open-source library by which any census data for any city can be visualized over a transit network.  This is the first usage of this library.</p>
 
-<p>Using median household income data from the census at the blockgroup level, we mapped the changes in income across each metro line.</p>
+<p>Using median household income data from the census at the blockgroup level, we mapped the changes in income across each rail transit line. For example, a rider from Cherry Hill on their way to a job at an industrial park in the Hunt Valley or Pepper Road areas would pass through neighborhoods of increasing median household incomes.  At the extreme, the median household income of the Gilroy Rd LR station neighborhood is seven times greater than that of Cherry Hill.</p>
 
 <p>Station, line and route information was constructed from a GTFS (General Transit Feed Specification) feed. A station neighborhood around each station was defined as a circle with radius of 0.5 mile was constructed.  All block groups that intersect a station neighborhood were identified and the proportion of the intersection area to the block group area was used to weight the population for each block group.  A weighted average of median incomes was calculated for each station neighborhood across the intersecting block groups.</p>
 <br/>   
-<br/>   
 
-<p>Data sources for Boston:</p>
+
+<p>Data sources for Baltimore:</p>
 <p>American Community Survey 2009 to 2013 (5-Year Estimates): www.socialexplorer.com</p>
-<p><a href="http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R10866001" target = "blank">Social Explorer 2015</a></p>
-<p><a href="http://www.wmata.com/rider_tools/developer_resources.cfm" target = "blank">GTFS data</a></p>
+<p><a href="http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R10872774" target = "blank">Social Explorer 2015</a></p>
+<p><a href="http://web.mta.info/developers/download.html" target = "blank">GTFS data</a></p>
 <p><a href="ftp://ftp.census.gov/geo/tiger/TIGER2013/BG/" target = "blank">2013 Census Block Group Shape Files</a></p>
 
 
@@ -179,7 +132,7 @@ Because they are so familiar, they form a nice backbone over which we can commun
 	</div>
 </div>
 
-<script src="index.js"></script>
+<script src="index_phila.js"></script>
 <script src="essaybox.js"></script>
 
     </body>
