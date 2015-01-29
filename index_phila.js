@@ -321,9 +321,7 @@ function drawLineGraph(lineColor,data){
 	//console.log('lineColor',lineColor)
 	//console.log('averages',averages)
 	var graphData = formatLineData(lineColor,data)
-	//console.log(averages)
 	var color = lineColor
-	//console.log(graphData[graphData.length-1])
 	d3.select("#charts svg").remove()
 	var margin = {top: 20, right: 20, bottom: 140, left: 50},
 	    width = 780 - margin.left - margin.right,
@@ -347,11 +345,6 @@ function drawLineGraph(lineColor,data){
 	
 	for(var i in averages){
 		var averagesLineColor = averages[i][0]
-		//console.log('averages[i]',averages[i])
-		//console.log('averagesLineColor',averagesLineColor)
-		//console.log('lineNameToLine',lineNameToLine)
-		//console.log('lineColor',lineColor)
-	//	console.log(averagesLineColor,lineColor)
 		if(averagesLineColor == lineColor){
 			var averageIncomeLineColor = averages[i][1]
 		//	console.log('averageIncomeLineColor',averageIncomeLineColor)
@@ -359,10 +352,13 @@ function drawLineGraph(lineColor,data){
 		}
 	}
 	
-	var lineName = data.lines[lineColor]["line_name"].replace("Line", "")
-	
-	
-	d3.select("#line-title").html("<strong>"+capitalCase(lineName)+" Line </strong><br/> Average Median Household Income: $"+parseInt(averageIncomeLineColor))
+	var lineName = capitalCase(data.lines[lineColor]["line_name"].replace("Line", ""))
+
+		if (lineNameToLine.hasOwnProperty(lineColor)) {
+			lineName = lineNameToLine[lineColor].replace("Line", "")
+		}
+		
+	d3.select("#line-title").html("<strong>"+lineName+" Line </strong><br/> Average Median Household Income: $"+parseInt(averageIncomeLineColor))
 	chartSvg.append("text")
 	.text("Weighted Line Average: $"+parseInt(averageIncomeLineColor))
 	.attr("x",width)
@@ -553,7 +549,6 @@ function drawLineGraph(lineColor,data){
 			tip.html(tipText)
 			tip.show()
 			d3.select(this).attr("opacity",.5)
-			console.log(d[0])
 			highlightCurrentStation(d[0],data)
 		})
 		.on("mouseout", function(d){
