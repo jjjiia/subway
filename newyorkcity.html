@@ -43,12 +43,20 @@
 	<div id = "title-text">
 		<div id = "title">New York City</div>
 		<div id = "subtitle">
-This map visualizes the  <br/> 
+This map visualizes the modes of transportation for commuting to work <br/> 
 
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project. 
 
 		<a id="showMore" href="#"> ... more </a>
-		<div id = "column">Column</div>
+		<div id = "column">
+			<a href="javascript:column = workAtHome; drawLineGraph(currentLine,allData)">Worked at home</a>|
+			<a href="javascript:column = walk; drawLineGraph(currentLine,allData)">Walked</a>|
+			<a href="javascript:column = bicycle; drawLineGraph(currentLine,allData)">Bicycle</a>|
+			<a href="javascript:column = publicTransport;drawLineGraph(currentLine,allData)">Public Transportation</a>|
+			<a href="javascript:column = car;drawLineGraph(currentLine,allData)">Car, Truck, or Van</a>
+			
+			
+		</div>
 		</div>
 	</div>
 </div>
@@ -73,6 +81,12 @@ It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.
 
 <script type="text/javascript" charset="utf-8">
 
+var car = "SE_T128_002"
+var publicTransport = "SE_T128_003"
+var bicycle = "SE_T128_005"
+var walk = "SE_T128_006"
+var workAtHome = "SE_T128_008"
+	
 var commuter = false;
 var commuterScale = [];
 var communtercenter = [-73.979681,40.699928]

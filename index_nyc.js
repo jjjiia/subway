@@ -2,6 +2,9 @@
 //TODO:
 var column = null
 var columnLabel = null
+var currentLine = null
+var allData = null
+
 $(function() {
 	// Window has loaded
 	queue()
@@ -41,6 +44,9 @@ function dataDidLoad(error,data,blocks,boundary,water) {
 	column = "SE_T128_006"
 	columnLabel = columnDictionary[column]
 	drawLineGraph(initialLineToDraw,data)
+		currentLine = initialLineToDraw
+		
+	allData = data
 	//column = "SE_T128_006"
 	//drawLineGraph(initialLineToDraw,data)
 	
@@ -316,7 +322,6 @@ function deg2rad(deg) {
 }
 
 function formatLineData(lineColor,data){
-	lineColor	
 	var currentData = data.lines[lineColor]["stns"]
 	//console.log(lineColor)
 	var orderedStations = data.lines[lineColor]["prir"][0]
@@ -707,6 +712,7 @@ function drawSubwayLines(route,data,svg,color,offset){
 		.on("mouseover",function(d){
 			var lineColor = color
 			console.log(lineColor)
+			currentLine=lineColor
 			drawLineGraph(lineColor,data)
 			//d3.select(this).style("opacity",0.2)
 		})
@@ -752,7 +758,7 @@ function drawSubwayStops(blocks,currentCoordinates,data,svg,fill,radius,offset){
 		.attr("opacity", 0)
 		.on("mouseover", function(){
 			drawLineGraph(fill,data)
-
+			currentLine=fill
 			d3.select(this).attr("opacity",.2)
 			//drawBlocks(blocks,currentCoordinates,data)
 			currentStation = stationsData[currentCoordinates[0]].name
