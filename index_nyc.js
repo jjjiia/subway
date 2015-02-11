@@ -1,6 +1,7 @@
 
 //TODO:
-
+var column = null
+var columnLabel = null
 $(function() {
 	// Window has loaded
 	queue()
@@ -12,9 +13,21 @@ $(function() {
 		.defer(d3.json, water)
 	.await(dataDidLoad);
 })
+var lineNameToLine = null;
+
+var columnDictionary = {
+"SE_T128_001":"Workers 16 Years and over",
+"SE_T128_002":"Means Of Transportation To Work: Car, truck, or van",
+"SE_T128_003":"Public transportation (Includes Taxicab)",
+"SE_T128_005":"Bicycle",
+"SE_T128_006":"Walked",
+"SE_T128_008":"Worked at home"
+}
 
 function dataDidLoad(error,data,blocks,boundary,water) {
-	//console.log(data)
+
+	console.log(data)
+	lineNameToLine = lineNameToLineDictionary(data)
 	var svg = d3.select("#subway")
 		.append("svg")
 		.attr("width",mapWidth)
@@ -25,11 +38,24 @@ function dataDidLoad(error,data,blocks,boundary,water) {
 	//drawLineGraph("RED",data)
 	d3.selectAll(".rolloverpath").attr("opacity",1)
 	formatSubwayStopsByLine(stations,data,blocks,svg)
+	column = "SE_T128_006"
+	columnLabel = columnDictionary[column]
 	drawLineGraph(initialLineToDraw,data)
+	//column = "SE_T128_006"
+	//drawLineGraph(initialLineToDraw,data)
+	
 	//drawAllBlocks(blocks,svg)
 	
 //	var lineColor = "red"
 //	drawLineGraph(lineColor,stops_steve)
+}
+function lineNameToLineDictionary(data){
+	var dictionary = {}
+	for(var line in data.lines){
+		dictionary[line] = data.lines[line]["line_name"]
+	}
+	//console.log(dictionary)
+	return dictionary
 }
 function capitalCase(string){
 	string = string.toLowerCase()
@@ -50,11 +76,11 @@ function formatDetailedData(station,data){
 	var stationName = data.stns[station].name
 	var blockgroups = data.stns[station].bgrs
 	var stationData = calculateIncomeData(blockgroups)
-	var income = "$"+stationData[2]
+	var income = stationData[2]+"%"
 	var quantity = stationData[0]
-	var min = "$"+stationData[3]
-	var max = "$"+stationData[4]
-	if(income == "$0"){
+	var min = stationData[3]+"%"
+	var max = +stationData[4]+"%"
+	if(income == "0%"){
 		income = "Not Enough Data"
 		max = "Not Enough Data"
 		min = "Not Enough Data"
@@ -68,7 +94,7 @@ function formatDetailedData(station,data){
 	
 	
 	
-	return "<strong>"+currentStation+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius"+"<br/>Average Median Household Income: "+income+"<br/>Min Median Household Income: "+min+"<br/>Max Median Household Income: "+max
+	return "<strong>"+currentStation+"</strong><br/>"+quantity+" Blockgroups in 0.5 Mile Radius<br/>"+columnLabel+": "+income+"<br/>Min "+columnLabel+": "+min+"<br/>Max "+columnLabel+": "+max
 }
 
 function drawWater(water,svg,fill,stroke,waterClass){
@@ -149,6 +175,7 @@ function drawBlocks(blocks,currentCoordinates,data){
 }
 
 function highlightCurrentStation(station,data){
+	
 	var station_name = data.stns[station].name
 	//console.log("highlight"+stripSpecialCharactersAndSpace(station_name))
 	d3.selectAll(".rollovers"+stripSpecialCharactersAndSpace(station_name)).attr("opacity",.4)	
@@ -167,35 +194,40 @@ function calculateIncomeData(blockgroups){
 	var sum = 0
 	var populationTotal = 0
 	var max = 0
-	var min = 100000000000000
+	var min = 100
 	for(var i in blockgroups){
 		var blockgroup = blockgroups[i]
 		//console.log(blockgroup)
-		var income = parseFloat(blockgroup[1]["SE_T057_001"])
-		if(income > max){
-			max = income
-		}
-		if (income < min){
-			min = income
-		}
-		var population = parseFloat(blockgroup[1]["SE_T001_001"])
+		var income = blockgroup[1][column]
+		
+		
+		var population = parseFloat(blockgroup[1]["SE_T128_001"])
+	//	console.log(population)
 		if(isNaN(population)){
 			population = 0
-		}
-		
+		}		
 		var populationProportion = parseFloat(blockgroup[1]["popp"])
 		
 		if(isNaN(income)){
 			income = 0
 			population = 0
 		}
-		if(min == 100000000000000){
+		var percent = parseFloat(income)/parseFloat(population)*100
+		if(percent > max){
+			max = percent
+		}
+		if (percent < min){
+			min = percent
+		}
+		if(min == 100){
 			min = 0
 		}
-		income = income*(population*populationProportion)
-		sum +=income
-		populationTotal = populationTotal+population*populationProportion
-		var averageIncome = sum/populationTotal
+		sum += parseFloat(income)
+		populationTotal = populationTotal+population
+		var averageIncome = sum/populationTotal*100
+	//	console.log([populationTotal,sum,averageIncome])
+		//console.log([populationTotal,population,averageIncome])
+		
 		if(sum == 0){
 			averageIncome =0
 			max = 0
@@ -215,7 +247,7 @@ function calculateIncomeData(blockgroups){
 /*function calculateLineWideAverage(graphData){
 	
 }*/
-function calculateAverages(data){
+function calculateAverages(data, column){
 	//console.log(data.lines)
 	//console.log(data.stns["NAYLOR ROAD METRO STATION"])
 	var incomeAverages = []
@@ -235,8 +267,9 @@ function calculateAverages(data){
 			//console.log(blockGroups)
 			for(var blockGroup in blockGroups){
 				var currentBlockGroup = blockGroups[blockGroup][1]
-				var population = parseFloat(currentBlockGroup["SE_T001_001"])
-				var income = parseFloat(currentBlockGroup["SE_T057_001"])
+				var population = parseFloat(currentBlockGroup["SE_T128_001"])
+				var income = parseFloat(currentBlockGroup[column])
+				
 				if (isNaN(income)){
 					income = 0
 					population = 1
@@ -244,12 +277,13 @@ function calculateAverages(data){
 				var proportion = parseFloat(currentBlockGroup["popp"])
 				
 				var weightedPopulation = population*proportion
-				var incomeTotal = income*weightedPopulation
-				lineIncomeSum = lineIncomeSum+incomeTotal
+				lineIncomeSum = lineIncomeSum+income
 				linePopSum = linePopSum+weightedPopulation
-				lineAverage = lineIncomeSum/linePopSum
+				lineAverage = lineIncomeSum/linePopSum*100
 			}
 		}
+		//console.log([lineIncomeSum, linePopSum,lineAverage])
+		
 		incomeAverages.push([line,lineAverage,linePopSum])
 		allLinesIncomeSum +=lineIncomeSum
 		allLinesPopSum +=linePopSum
@@ -282,6 +316,7 @@ function deg2rad(deg) {
 }
 
 function formatLineData(lineColor,data){
+	lineColor	
 	var currentData = data.lines[lineColor]["stns"]
 	//console.log(lineColor)
 	var orderedStations = data.lines[lineColor]["prir"][0]
@@ -302,6 +337,7 @@ function formatLineData(lineColor,data){
 			var origin = data.stns[orderedStations[station-1]]["coor"]
 		}
 		var incomeData = calculateIncomeData(blockgroups)
+		//console.log(incomeData)
 		var income = incomeData[2]
 		var minIncome = incomeData[3]
 		var maxIncome = incomeData[4]
@@ -316,15 +352,16 @@ function formatLineData(lineColor,data){
 		stationList.push([currentStation,income,cummulativeDistance,minIncome,maxIncome])
 		
 	}
-	
 	return stationList
 }
 
 function drawLineGraph(lineColor,data){
-	var averages = calculateAverages(data)
+	var averages = calculateAverages(data,column)
+	//console.log(averages)
 	//console.log('lineColor',lineColor)
 	//console.log('averages',averages)
 	var graphData = formatLineData(lineColor,data)
+	//console.log(graphData)
 	var color = lineColor
 	d3.select("#charts svg").remove()
 	var margin = {top: 20, right: 20, bottom: 140, left: 50},
@@ -344,7 +381,7 @@ function drawLineGraph(lineColor,data){
 	//	console.log(incomes)
 	//	console.log(maxIncome)
 	//var incomeScale = d3.scale.linear().domain([0,maxIncome]).range([height- margin.top,margin.bottom])
-	var incomeScale = d3.scale.linear().domain([0,260000]).range([height- margin.top,margin.bottom])
+	var incomeScale = d3.scale.linear().domain([0,100]).range([height- margin.top,margin.bottom])
 	var coordinateScale = d3.scale.linear().domain([-.5,maxDistance]).range([margin.left,width - margin.right])	
 	
 	for(var i in averages){
@@ -362,9 +399,9 @@ function drawLineGraph(lineColor,data){
 			lineName = lineNameToLine[lineColor].replace("Line", "")
 		}
 		
-	d3.select("#line-title").html("<strong>"+lineName+" Line </strong><br/> Average Median Household Income: $"+parseInt(averageIncomeLineColor))
+	d3.select("#line-title").html("<strong>"+lineName+" Line </strong><br/> "+columnLabel+": "+parseInt(averageIncomeLineColor)+"%")
 	chartSvg.append("text")
-	.text("Weighted Line Average: $"+parseInt(averageIncomeLineColor))
+	.text("Weighted Line Average: "+parseInt(averageIncomeLineColor)+"%")
 	.attr("x",width)
 	.attr("y",incomeScale(averageIncomeLineColor)-margin.bottom-3)
 	.attr("text-anchor", "end")
@@ -425,7 +462,7 @@ function drawLineGraph(lineColor,data){
 	var yAxis = d3.svg.axis()
 	    .scale(incomeScale)
 	    .orient("left")
-		.tickValues([50000,100000,150000,200000,250000]);	
+		.tickValues([0,25,50,75,100]);	
 	chartSvg.append("g")
         .attr("class", "y axis")
         .call(yAxis)
@@ -437,7 +474,7 @@ function drawLineGraph(lineColor,data){
 		.attr("y", -55)
 		.attr("transform","rotate(90)")
         .style("text-anchor", "start")
-        .text("Median Household Income ($)")
+        .text(columnLabel)
 		.attr("fill","#aaa");
 	//line graph 		
 	var line = d3.svg.line()
@@ -550,7 +587,7 @@ function drawLineGraph(lineColor,data){
 		.attr("fill",colorDictionary[color])
 		.attr("opacity",0)	
 		.on("mouseover",function(d){
-			var tipText = "$"+ parseInt(d[1])
+			var tipText = parseInt(d[1])+"%"
 			tip.html(tipText)
 			tip.show()
 			d3.select(this).attr("opacity",.5)
@@ -669,6 +706,7 @@ function drawSubwayLines(route,data,svg,color,offset){
 		})
 		.on("mouseover",function(d){
 			var lineColor = color
+			console.log(lineColor)
 			drawLineGraph(lineColor,data)
 			//d3.select(this).style("opacity",0.2)
 		})

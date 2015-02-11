@@ -3,7 +3,7 @@
   <head>
 	  <meta charset="UTF-8">
 	  
-	<title>Subway Boston</title>
+	<title>Subway New York City</title>
 	<script src="static/javascripts/d3.v3.min.js"></script>
 	<script src="static/javascripts/topojson.v1.min.js"></script>
 	<script src="static/javascripts/jquery.min.js"></script>
@@ -41,11 +41,14 @@
 		<a id="logo" href="http://youarehere.cc"><img src="static/images/logo.jpg" style="width: 50px"></a>
 	</div>
 	<div id = "title-text">
-		<div id = "title">Boston</div>
+		<div id = "title">New York City</div>
 		<div id = "subtitle">
-This map visualizes the median income by station along Boston's T system. <br/> 
+This map visualizes the  <br/> 
+
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project. 
+
 		<a id="showMore" href="#"> ... more </a>
+		<div id = "column">Column</div>
 		</div>
 	</div>
 </div>
@@ -72,103 +75,85 @@ It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.
 
 var commuter = false;
 var commuterScale = [];
-var communtercenter = [-71.17,42.315163]
+var communtercenter = [-73.979681,40.699928]
 var commuterscale =[26000]
 
 var stations = "data2/boston_circles.geojson"
-var data = "data2/boston_station_data.json"
+var data = "data2/nyc_station_data.json"
 var blocks = "data2/boston_blockgroups_filtered.geojson"
-var boundary = "data2/boston_river (1).geojson"
-var water = "data2/boston_ocean (1).geojson"
+var boundary = "data2/sfo_river.geojson"
+var water = "data2/sfo_ocean.geojson"
 var wordsToReplace = ["@"," - Bsl","Station"," - Fs ", " - Nhsl", " - Mbfs"]
-var initialLineToDraw = "_948_"
+var initialLineToDraw = "_1"
 
-var center = [-71.123,42.32]
-var scale =[96000]
+var center = [-73.9,40.74]
+var scale =[80000]
 var mapWidth = 460
-var mapHeight = 600
+var mapHeight = 650
 var translate = [mapWidth/2,mapHeight/2]
 var colorDictionary = {
-"_741":"#aaa",
-"_742":"#aaa",
-"_746":"#aaa",
-"_749":"#aaa",
-"_751":"#aaa",
-"_810_":"#44CA4A",
-"_813_":"#44CA4A",
-"_823_":"#44CA4A",
-"_830_":"#44CA4A",
-"_831_":"#44CA4A",
-"_840_":"#44CA4A",
-"_842_":"#44CA4A",
-"_851_":"#44CA4A",
-"_852_":"#44CA4A",
-"_880_":"#44CA4A",
-"_882_":"#44CA4A",
-"_899_":"#ED4935",
-"_903_":"#FCA70A",
-"_913_":"#FCA70A",
-"_931_":"#E6422A",
-"_933_":"#E6422A",
-"_946_":"#1A84F0",
-"_948_":"#1A84F0"
+	"_1":"#E13F29",// "red",
+	"_2":"#E13F29",// "red",
+	"_3":"#E13F29",// "red",
+	"_4": "green",//"green",
+	"_5": "green",//"green",
+	"_6":  "green",//"green",
+	"_6X": "green",//"green",
+	"_7": "#713E84",//"purple",
+	"_7X":"#713E84",// "purple",
+	"_A": "#5176D2",//"blue",
+	"_B": "#EF721F",//"orange",
+	"_C": "#5176D2",//"blue",
+	"_D": "#EF721F",//"orange",
+	"_E": "#5176D2",//"blue",
+	"_F": "#EF721F",//"orange",
+	"_FS": "black",
+	"_G":"#42AF34",// "green",
+	"_GS": "black",
+	"_H": "black",
+	"_J": "#894814",//"brown",
+	"_L": "#666",
+	"_M":"#894814",// "brown",
+	"_N": "#F2A21E",//"yellow",
+	"_Q": "#F2A21E",//"yellow",
+	"_R": "#F2A21E",//"yellow",
+	"_Z": "#894814"//"brown"
 }
 var offsetDictionary = {
-"_741":[0,0],
-"_742":[0,0],
-"_746":[0,0],
-"_749":[0,0],
-"_751":[0,0],
-"_810_":[0,0],
-"_813_":[0,0],
-"_823_":[0,0],
-"_830_":[0,0],
-"_831_":[0,0],
-"_840_":[0,0],
-"_842_":[0,0],
-"_851_":[0,0],
-"_852_":[0,0],
-"_880_":[0,0],
-"_882_":[0,0],
-"_899_":[0,0],
-"_903_":[0,0],
-"_913_":[0,0],
-"_931_":[0,0],
-"_933_":[0,0],
-"_946_":[0,0],
-"_948_":[0,0]
+	"_1": [0,0],
+	"_2": [0,0],
+	"_3": [0,0],
+	"_4": [0,0],
+	"_5": [0,0],
+	"_6": [0,0],
+	"_6X": [0,0],
+	"_7": [0,0],
+	"_7X": [0,0],
+	"_A": [0,0],
+	"_B": [0,0],
+	"_C": [0,0],
+	"_D": [0,0],
+	"_E": [0,0],
+	"_F": [0,0],
+	"_FS": [0,0],
+	"_G": [0,0],
+	"_GS": [0,0],
+	"_H": [0,0],
+	"_J": [0,0],
+	"_L": [0,0],
+	"_M": [0,0],
+	"_N": [0,0],
+	"_Q": [0,0],
+	"_R": [0,0],
+	"_Z": [0,0]
 }
-var lineNameToLine = {
-"_741":"Silver Line SL1",
-"_742":"Silver Line SL2",
-"_746":"Silver Line Waterfront",
-"_749":"Silver Line SL5",
-"_751":"Silver Line SL4",
-"_810_":"Green Line",
-"_813_":"Green Line",
-"_823_":"Green Line",
-"_830_":"Green Line",
-"_831_":"Green Line",
-"_840_":"Green Line",
-"_842_":"Green Line",
-"_851_":"Green Line",
-"_852_":"Green Line",
-"_880_":"Green Line",
-"_882_":"Green Line",
-"_899_":"Orange Line",
-"_903_":"Orange Line",
-"_913_":"Orange Line",
-"_931_":"Red Line",
-"_933_":"Red Line",
-"_946_":"Blue Line",
-"_948_":"Blue Line"
-}
+
 </script>
 
 <div id="essayBox">
 	<div id='essayBox-close' class="glyphicon glyphicon-remove"></div>
 	<div id='essayContent'>
-	<p>This map visualizes the median income by station along Boston’s T system.
+	<p>This map visualizes the median income by station along New York City’s MUNI and BART systems.
 It is inspired by <i>The New Yorker</i>'s <u><a href="http://projects.newyorker.com/story/subway/" target = "blank">Inequality and New York's Subway</a> </u>Project.  </p>
 
 <p><i>The New Yorker</i> map showed that transit networks are powerful orientation features. 
@@ -179,13 +164,11 @@ Because they are so familiar, they form a nice backbone over which we can commun
 <p>Using median household income data from the census at the blockgroup level, we mapped the changes in income across each metro line.</p>
 
 <p>Station, line and route information was constructed from a GTFS (General Transit Feed Specification) feed. A station neighborhood around each station was defined as a circle with radius of 0.5 mile was constructed.  All block groups that intersect a station neighborhood were identified and the proportion of the intersection area to the block group area was used to weight the population for each block group.  A weighted average of median incomes was calculated for each station neighborhood across the intersecting block groups.</p>
-<br/>   
-<br/>   
 
-<p>Data sources for Boston:</p>
-<p>American Community Survey 2009 to 2013 (5-Year Estimates): www.socialexplorer.com</p>
-<p><a href="http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R10869519" target = "blank">Social Explorer 2015</a></p>
-<p><a href="http://www.mbta.com/rider_tools/developers/default.asp?id=21895" target = "blank">GTFS data</a></p>
+<p>Data sources for New York City:</p>
+<p>American Community Survey 2009 to 2013 (5-Year Estimates): <a href=" http://www.socialexplorer.com/pub/reportdata/HtmlResults.aspx?reportid=R10873553" target = "blank">Social Explorer 2015</a></p>
+<p><a href="http://www.sfmta.com/about-sfmta/reports/gtfs-transit-data" target = "blank">MUNI GTFS data</a> Also using normalized data for MUNI, route types were incorrect in <a href="http://transitfeeds.com/p/sfmta " target="blank">official data</a>, thanks to <a href"https://twitter.com/HendX " target="blank">Quentin Zervaas</a></p>
+<p><a href="http://www.bart.gov/schedules/developers/gtfs" target = "blank">BART GTFS data</a></p>
 <p><a href="ftp://ftp.census.gov/geo/tiger/TIGER2013/BG/" target = "blank">2013 Census Block Group Shape Files</a></p>
 
 
@@ -193,7 +176,7 @@ Because they are so familiar, they form a nice backbone over which we can commun
 	</div>
 </div>
 
-<script src="index_phila.js"></script>
+<script src="index_nyc.js"></script>
 <script src="essaybox.js"></script>
 
     </body>
